@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BroWork — Secure BYOD Workspace for Remote Teams</title>
+<meta name="description" content="Hire global talent securely. Zero-knowledge local encryption for your company infrastructure on any personal device.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0B0C0E;
+    --panel:#14161A;
+    --panel-2:#1B1E23;
+    --paper:#E9E6DC;
+    --paper-dim:#B7B3A6;
+    --stamp:#C1462E;
+    --signal:#6FA98D;
+    --line: rgba(233,230,220,0.14);
+    --line-strong: rgba(233,230,220,0.28);
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+    --maxw: 1180px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:var(--body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 100% 100%, 64px 100%;
+    background-attachment: fixed;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
+  }
+
+  a{color:inherit;}
+  img{max-width:100%; display:block;}
+
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
+
+  /* ---------- stamp / tag utility ---------- */
+  .stamp{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--stamp); border:1px solid var(--stamp); padding:4px 10px; border-radius:2px;
+    transform:rotate(-1.2deg);
+  }
+  .stamp::before{content:"●"; font-size:8px;}
+
+  .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--paper-dim);
+  }
+
+  /* ---------- redaction signature ---------- */
+  .redact{
+    position:relative; display:inline-block; cursor:default;
+    color:transparent;
+    background:var(--paper);
+    border-radius:2px;
+    padding:0 6px;
+    transition: color 0.25s ease, background 0.25s ease;
+  }
+  .redact::selection{color:transparent;}
+  .redact:hover, .redact:focus-visible{
+    color:var(--ink);
+    background:var(--signal);
+  }
+  .redact-hint{font-family:var(--mono); font-size:11px; color:var(--paper-dim); letter-spacing:0.04em;}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,12,14,0.86); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; height:76px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:var(--display); font-weight:700; font-size:19px; letter-spacing:-0.01em;}
+  .brand .dot{width:9px; height:9px; background:var(--signal); border-radius:50%; box-shadow:0 0 0 3px rgba(111,169,141,0.18);}
+  .navlinks{display:flex; gap:32px; align-items:center;}
+  .navlinks a{font-size:14px; color:var(--paper-dim); text-decoration:none; transition:color 0.15s;}
+  .navlinks a:hover{color:var(--paper);}
+  .btn{
+    font-family:var(--mono); font-size:13px; letter-spacing:0.02em;
+    padding:10px 18px; border-radius:3px; text-decoration:none; white-space:nowrap;
+    border:1px solid var(--line-strong);
+  }
+  .btn-primary{background:var(--paper); color:var(--ink); border-color:var(--paper); font-weight:600;}
+  .btn-primary:hover{background:var(--signal); border-color:var(--signal);}
+  .btn-ghost{color:var(--paper);}
+  .btn-ghost:hover{border-color:var(--paper-dim);}
+  .navcta{display:flex; gap:12px; align-items:center;}
+  .navburger{display:none;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:96px 0 72px; position:relative; overflow:hidden;}
+  .hero-grid{display:grid; grid-template-columns:1.15fr 0.85fr; gap:56px; align-items:center;}
+  .eyebrow{margin-bottom:22px;}
+  h1{
+    font-family:var(--display); font-weight:700; font-size:clamp(34px, 5vw, 60px);
+    line-height:1.04; letter-spacing:-0.02em; margin-bottom:22px;
+  }
+  h1 .accent{color:var(--signal);}
+  .lede{font-size:17px; color:var(--paper-dim); max-width:46ch; margin-bottom:32px;}
+  .hero-ctas{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:36px;}
+  .btn-lg{padding:14px 24px; font-size:14px;}
+  .redact-block{
+    font-family:var(--mono); font-size:13px; line-height:2; color:var(--paper-dim);
+    padding:18px 20px; background:var(--panel); border:1px solid var(--line); border-radius:4px;
+  }
+  .redact-block .redact{margin:0 2px;}
+
+  /* dossier card in hero */
+  .dossier{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:6px;
+    padding:26px; position:relative; transform:rotate(1deg);
+    box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);
+  }
+  .dossier::before{
+    content:"FILE / BROWORK-001"; position:absolute; top:-11px; left:22px;
+    background:var(--ink); border:1px solid var(--line-strong); padding:2px 10px;
+    font-family:var(--mono); font-size:10px; letter-spacing:0.1em; color:var(--paper-dim); border-radius:2px;
+  }
+  .dossier h4{font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:var(--paper-dim); margin-bottom:14px;}
+  .dossier-row{display:flex; justify-content:space-between; padding:11px 0; border-bottom:1px dashed var(--line);}
+  .dossier-row:last-child{border-bottom:none;}
+  .dossier-row .k{font-size:13px; color:var(--paper-dim);}
+  .dossier-row .v{font-family:var(--mono); font-size:13px;}
+  .v.ok{color:var(--signal);}
+
+  /* ---------- section shell ---------- */
+  section{padding:88px 0; border-bottom:1px solid var(--line);}
+  .section-head{max-width:640px; margin-bottom:56px;}
+  .section-head .tag{display:block; margin-bottom:14px;}
+  .section-head h2{font-family:var(--display); font-weight:700; font-size:clamp(26px,3.4vw,38px); letter-spacing:-0.015em; line-height:1.15;}
+  .section-head p{margin-top:14px; color:var(--paper-dim); font-size:15.5px; max-width:52ch;}
+
+  /* ---------- pillars (exhibit tabs) ---------- */
+  .pillars{display:grid; grid-template-columns:repeat(2,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .pillar{background:var(--panel); padding:34px 32px;}
+  .pillar-tab{
+    display:inline-block; font-family:var(--mono); font-size:11px; letter-spacing:0.12em;
+    color:var(--stamp); border:1px solid var(--stamp); padding:2px 8px; border-radius:2px; margin-bottom:18px;
+  }
+  .pillar h3{font-family:var(--display); font-size:20px; font-weight:600; margin-bottom:10px;}
+  .pillar p.desc{color:var(--paper-dim); font-size:14.5px; margin-bottom:18px;}
+  .pillar ul{list-style:none;}
+  .pillar li{
+    font-size:13.5px; padding:9px 0 9px 20px; border-top:1px solid var(--line); position:relative; color:var(--paper);
+  }
+  .pillar li:first-child{border-top:none;}
+  .pillar li::before{content:"→"; position:absolute; left:0; color:var(--signal); font-family:var(--mono);}
+
+  /* ---------- how it works : ledger ---------- */
+  .ledger{border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .ledger-row{display:grid; grid-template-columns:90px 1fr; border-top:1px solid var(--line);}
+  .ledger-row:first-child{border-top:none;}
+  .ledger-num{
+    font-family:var(--mono); font-size:13px; color:var(--paper-dim); padding:26px 20px;
+    border-right:1px solid var(--line); display:flex; align-items:flex-start; justify-content:center;
+  }
+  .ledger-body{padding:26px 28px;}
+  .ledger-body h3{font-family:var(--display); font-size:17px; font-weight:600; margin-bottom:8px;}
+  .ledger-body p{color:var(--paper-dim); font-size:14.5px; max-width:64ch;}
+  .deploy-badges{display:flex; gap:12px; flex-wrap:wrap; margin-top:36px;}
+  .badge{
+    font-family:var(--mono); font-size:12px; padding:9px 14px; border:1px solid var(--line-strong); border-radius:3px; color:var(--paper-dim);
+  }
+  .badge b{color:var(--paper);}
+
+  /* ---------- rbac strip ---------- */
+  .rbac{display:flex; align-items:center; gap:0; flex-wrap:wrap; font-family:var(--mono); font-size:13px; margin-top:14px;}
+  .rbac span{padding:8px 16px; border:1px solid var(--line-strong); border-radius:3px; background:var(--panel);}
+  .rbac .arrow{color:var(--paper-dim); padding:0 10px;}
+
+  /* ---------- CTA banner ---------- */
+  .cta-banner{
+    background:var(--panel); border:1px solid var(--line-strong); border-radius:8px;
+    padding:56px 48px; display:flex; align-items:center; justify-content:space-between; gap:32px; flex-wrap:wrap;
+    position:relative; overflow:hidden;
+  }
+  .cta-banner::after{
+    content:""; position:absolute; inset:0;
+    background-image:linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:40px 100%; opacity:0.5; pointer-events:none;
+  }
+  .cta-banner h2{font-family:var(--display); font-size:clamp(24px,3vw,32px); font-weight:700; max-width:22ch; letter-spacing:-0.01em;}
+  .cta-actions{display:flex; gap:14px; flex-wrap:wrap; position:relative; z-index:1;}
+
+  /* ---------- footer ---------- */
+  footer{padding:56px 0 36px;}
+  .foot-top{display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap; margin-bottom:48px;}
+  .foot-brand{max-width:320px;}
+  .foot-brand .brand{margin-bottom:14px;}
+  .foot-brand p{color:var(--paper-dim); font-size:13.5px;}
+  .foot-cols{display:flex; gap:64px; flex-wrap:wrap;}
+  .foot-col h5{font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--paper-dim); margin-bottom:16px;}
+  .foot-col a{display:block; font-size:14px; margin-bottom:11px; text-decoration:none; color:var(--paper);}
+  .foot-col a:hover{color:var(--signal);}
+  .foot-bottom{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;
+    padding-top:26px; border-top:1px solid var(--line); font-family:var(--mono); font-size:12px; color:var(--paper-dim);
+  }
+  .status{display:flex; align-items:center; gap:8px;}
+  .status .pulse{width:7px; height:7px; border-radius:50%; background:var(--signal); box-shadow:0 0 0 3px rgba(111,169,141,0.2);}
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px){
+    .navlinks{display:none;}
+    .hero-grid{grid-template-columns:1fr;}
+    .dossier{transform:none; order:-1;}
+    .pillars{grid-template-columns:1fr;}
+    .ledger-row{grid-template-columns:60px 1fr;}
+    .cta-banner{flex-direction:column; align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span>BroWork</div>
+    <nav class="navlinks">
+      <a href="#platform">Platform</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#access">Access &amp; roles</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="navcta">
+      <a class="btn btn-ghost" href="mailto:contact@browork.in">Contact sales</a>
+      <a class="btn btn-primary" href="mailto:contact@browork.in">Start free trial</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="border-bottom:1px solid var(--line); padding-top:96px;">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow"><span class="stamp">Zero-knowledge · BYOD</span></div>
+        <h1>Hire anywhere.<br>Code securely<span class="accent">.</span></h1>
+        <p class="lede">Stop shipping $2,000 laptops to remote engineers. BroWork gives contractors and global hires a secure, sandboxed workspace on their own devices — your credentials never leave your control.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-primary btn-lg" href="mailto:contact@browork.in">Start free trial</a>
+          <a class="btn btn-ghost btn-lg" href="#how-it-works">See how it works</a>
+        </div>
+        <div class="redact-block">
+          <span class="redact-hint">// hover to declassify</span><br>
+          MONGODB_URI = <span class="redact" tabindex="0">mongodb+srv://prod-cluster.internal</span><br>
+          GITHUB_TOKEN = <span class="redact" tabindex="0">ghp_9f2a1c...redacted...</span><br>
+          AI_API_KEY = <span class="redact" tabindex="0">sk-live-889201...</span>
+        </div>
+      </div>
+      <div class="dossier">
+        <h4>Org status — Acme Inc.</h4>
+        <div class="dossier-row"><span class="k">Active contractors</span><span class="v">14</span></div>
+        <div class="dossier-row"><span class="k">Credentials exposed to devices</span><span class="v ok">0</span></div>
+        <div class="dossier-row"><span class="k">Proxy sessions today</span><span class="v">238</span></div>
+        <div class="dossier-row"><span class="k">Idle auto-lock</span><span class="v ok">12 min</span></div>
+        <div class="dossier-row"><span class="k">Encryption</span><span class="v ok">Zero-knowledge</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="platform">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Core capabilities</span>
+        <h2>Four pillars of secure remote work.</h2>
+        <p>Every feature is built around one principle — your intellectual property never leaves your control, even when your team is scattered across time zones.</p>
+      </div>
+      <div class="pillars">
+        <div class="pillar">
+          <span class="pillar-tab">Exhibit A</span>
+          <h3>Secure proxy layer</h3>
+          <p class="desc">Connect your stack — credentials stay on your server, never on an employee's machine.</p>
+          <ul>
+            <li>MongoDB database proxy, reachable via localhost</li>
+            <li>GitHub push/pull proxy — tokens never exposed</li>
+            <li>AI CLI / MCP proxy with per-developer audit</li>
+            <li>Custom server proxy (Enterprise)</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <span class="pillar-tab">Exhibit B</span>
+          <h3>Browser sessions (SSO)</h3>
+          <p class="desc">One login gives company-controlled access to every tool your team already uses.</p>
+          <ul>
+            <li>Notion &amp; Jira under the org account</li>
+            <li>Slack &amp; Discord, isolated from personal accounts</li>
+            <li>Figma &amp; Canva paid seats — no shared passwords</li>
+            <li>Google Drive on org storage, not personal cloud</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <span class="pillar-tab">Exhibit C</span>
+          <h3>Active work telemetry</h3>
+          <p class="desc">Proof of work, not surveillance — no screen recording, no keylogging.</p>
+          <ul>
+            <li>Idle detection, prompting after 10–15 minutes</li>
+            <li>Workspace file watcher scores code activity</li>
+            <li>GitHub event log — commits, pushes, pulls per dev</li>
+            <li>AI token usage, cost and model per request</li>
+          </ul>
+        </div>
+        <div class="pillar">
+          <span class="pillar-tab">Exhibit D</span>
+          <h3>Admin dashboard</h3>
+          <p class="desc">Manage your team, infrastructure and billing from a single screen.</p>
+          <ul>
+            <li>HRMS and org tree for team hierarchy</li>
+            <li>Proxy session logs with a per-user audit trail</li>
+            <li>SSH keys and server URLs, distributed securely</li>
+            <li>RBAC — Owner → Admin → Manager → Dev → Contractor</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how-it-works">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">How it works</span>
+        <h2>Onboard a contractor in 30 seconds.</h2>
+        <p>Skip the hardware procurement cycle. No VPN setup, no credential emails — just an install and a license key.</p>
+      </div>
+      <div class="ledger">
+        <div class="ledger-row">
+          <div class="ledger-num">01</div>
+          <div class="ledger-body">
+            <h3>Admin signs up and gets a license key</h3>
+            <p>The founder or IT admin registers, sets up the organization — DB URIs, GitHub token, AI key — and receives a cryptographic master license key.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <div class="ledger-num">02</div>
+          <div class="ledger-body">
+            <h3>Invite contractors and employees</h3>
+            <p>Send magic invite links from the dashboard. Each invite consumes one seat and pre-assigns a role — developer, manager, or contractor.</p>
+          </div>
+        </div>
+        <div class="ledger-row">
+          <div class="ledger-num">03</div>
+          <div class="ledger-body">
+            <h3>Employees install and activate</h3>
+            <p>They download the BroWork app, enter the license key, and are instantly working — with proxied database access, SSO sessions, and telemetry running in the background.</p>
+          </div>
+        </div>
+      </div>
+      <div class="deploy-badges">
+        <span class="badge"><b>Cloud-hosted</b> — zero DevOps on Startup &amp; Company plans</span>
+        <span class="badge"><b>On-premise</b> — self-host on your own servers (Enterprise)</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="access">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="tag">Access control</span>
+        <h2>Role-based, top to bottom.</h2>
+        <p>Every seat is scoped to exactly what it needs — nothing more.</p>
+      </div>
+      <div class="rbac">
+        <span>Owner</span><span class="arrow">→</span>
+        <span>Admin</span><span class="arrow">→</span>
+        <span>Manager</span><span class="arrow">→</span>
+        <span>Dev</span><span class="arrow">→</span>
+        <span>Contractor</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="cta-banner">
+        <h2>Ship laptops? Ship BroWork instead.</h2>
+        <div class="cta-actions">
+          <a class="btn btn-primary btn-lg" href="mailto:contact@browork.in">Start 14-day free trial</a>
+          <a class="btn btn-ghost btn-lg" href="mailto:contact@browork.in">Contact sales</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="brand"><span class="dot"></span>BroWork</div>
+        <p>Secure BYOD infrastructure for remote engineering teams. Zero-knowledge. License-bound. Enterprise-grade.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h5>Product</h5>
+          <a href="#platform">Platform overview</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#access">Access &amp; roles</a>
+        </div>
+        <div class="foot-col">
+          <h5>Company</h5>
+          <a href="mailto:contact@browork.in">Contact sales</a>
+          <a href="mailto:contact@browork.in">Support</a>
+          <a href="mailto:contact@browork.in">Security</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 BroWork, Inc. All rights reserved.</span>
+      <span class="status"><span class="pulse"></span>All systems operational</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
